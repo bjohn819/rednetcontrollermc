@@ -1,0 +1,54 @@
+local cableSide = "bottom"  -- Or where ever your cable is.
+
+local mon = peripheral.wrap("left") -- Or where ever your colour monitor is.
+mon.setTextColor(colours.white)
+mon.setBackgroundColor(colours.black)
+mon.clear()
+
+local xLen, yLen = mon.getSize()
+
+local myEvent
+
+-- Menu items.
+-- Add as desired, but don't exceed 16 entries.
+local switches = {
+   ["Witch Farm"] = {colour = colours.green,  screenRow =  1},
+   ["Atom Splitter"] = {colour = colours.red,  screenRow =  5},
+   ["Nuke Factory"]  = {colour = colours.yellow, screenRow = 10}}
+
+-- Initial menu render:
+for key,value in pairs(switches) do
+   mon.setBackgroundColor(colours.black)
+   mon.setCursorPos(2,value.screenRow)
+   mon.write(key)
+   mon.setCursorPos(xLen-5,value.screenRow)
+   
+   if colours.test(rs.getBundledOutput(cableSide),value.colour) then
+     mon.setBackgroundColor(colours.green)
+     mon.write(" On  ")
+   else
+     mon.setBackgroundColor(colours.red)
+     mon.write(" Off ")
+   end
+end     
+
+-- Main program loop.
+while true do
+   myEvent = {os.pullEvent("monitor_touch")}
+   
+   for key,value in pairs(switches) do if myEvent[4] == value.screenRow then
+     mon.setCursorPos(xLen-5,value.screenRow)
+
+     if not colours.test(rs.getBundledOutput(cableSide),value.colour) then
+       mon.setBackgroundColor(colours.green)
+       mon.write(" On  ")
+       rs.setBundledOutput(cableSide,colours.combine(rs.getBundledOutput(cableSide),value.colour))
+     else
+       mon.setBackgroundColor(colours.red)
+       mon.write(" Off ")
+       rs.setBundledOutput(cableSide,colours.subtract(rs.getBundledOutput(cableSide),value.colour))
+     end
+     
+     break
+   end end
+end
